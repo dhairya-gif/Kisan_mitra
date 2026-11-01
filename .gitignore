@@ -1,0 +1,133 @@
+# =============================================================================
+# Git Ignore Configuration for Kisan Mitra (Agritech Assistant)
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# 1. Environment Secrets & API Keys (CRITICAL: Never commit secrets to GitHub)
+# -----------------------------------------------------------------------------
+.env
+.env*.local
+.env.development
+.env.production
+.env.test
+*.env
+
+# Retain the environment template for setup instructions
+!.env.example
+
+# ----------------------------------------------------------/Users/dhairyauppal/gitignore-------------------
+# 2. Large Binaries & Standalone Executables
+# (cloudflared.exe is ~55MB; binaries bloat git history and exceed GitHub limits)
+# -----------------------------------------------------------------------------
+cloudflared.exe
+cloudflared
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+
+# Cloudflare Tunnel temporary credentials & certs
+.cloudflared/
+cert.pem
+
+# -----------------------------------------------------------------------------
+# 3. Local Runtime Databases & Cache Files
+# (cache.db is an SQLite cache storing live API responses ~7.6MB)
+# -----------------------------------------------------------------------------
+cache.db
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# -----------------------------------------------------------------------------
+# 4. Python Virtual Environments
+# (Virtual environments contain thousands of local binaries and packages)
+# -----------------------------------------------------------------------------
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# -----------------------------------------------------------------------------
+# 5. Python Bytecode & Compilation Artifacts
+# -----------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# -----------------------------------------------------------------------------
+# 6. Audio & Media Temporary Files (STT / TTS recordings)
+# -----------------------------------------------------------------------------
+*.wav
+*.mp3
+*.ogg
+*.m4a
+*.webm
+temp_audio/
+audio_cache/
+
+# -----------------------------------------------------------------------------
+# 7. Logs & Temporary Files
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.tmp
+*.temp
+temp/
+tmp/
+
+# -----------------------------------------------------------------------------
+# 8. Editor & IDE Settings
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# AI Agent & Assistant workspaces / state
+.gemini/
+.claude/
+.codex/
+.cursor/
+
+# -----------------------------------------------------------------------------
+# 9. Operating System Artifacts
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+

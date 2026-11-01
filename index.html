@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌾 Kisan Mitra - Multilingual Agritech Voice & Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=2.9">
+</head>
+<body data-theme="dark">
+
+<!-- BACKDROP FOR MOBILE SIDEBAR -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="appSidebar">
+  <div class="brand">
+    <div class="brand-info">
+      <div class="brand-icon">🌾</div>
+      <div class="brand-text">
+        <div class="brand-title" data-i18n="app_title">Kisan Mitra</div>
+        <div class="brand-badge" data-i18n="app_badge">Climate & Mandi AI</div>
+      </div>
+    </div>
+    <div class="brand-actions">
+      <button class="theme-toggle-btn" id="themeBtn" title="Toggle Light/Dark Mode" onclick="toggleTheme()">☀️</button>
+      <button class="mobile-close-btn mobile-only" id="sidebarCloseBtn" title="Close Sidebar" onclick="closeSidebar()" aria-label="Close Sidebar">✕</button>
+    </div>
+  </div>
+
+  <div class="control-card">
+    <div class="control-title" data-i18n="nav_settings">District Settings</div>
+    
+    <div class="field">
+      <label data-i18n="lbl_language">Interface Language</label>
+      <select id="langSelect" onchange="switchLanguage(this.value)">
+        <option value="en" selected>English (India)</option>
+        <option value="hi">हिन्दी (Hindi / Hinglish)</option>
+        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+        <option value="te">తెలుగు (Telugu)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label data-i18n="lbl_district">Target District</label>
+      <input type="text" id="districtInput" value="Ludhiana" placeholder="Enter Indian district..." oninput="updateChatPlaceholder()" onchange="updateChatPlaceholder()">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" id="btnGps" onclick="useDeviceGpsLocation()" data-i18n="btn_gps">
+        📍 Use Device GPS
+      </button>
+      <button class="btn-secondary" id="btnVoiceLoc" onclick="speakDistrictLocation()" data-i18n="btn_voice_loc">
+        🎤 Speak District
+      </button>
+    </div>
+
+    <div class="field">
+      <label data-i18n="lbl_crop">Selected Crop</label>
+      <select id="cropSelect" onchange="loadDashboard()">
+        <option value="Wheat" selected>Wheat (गेंहू / ਕਣਕ)</option>
+        <option value="Paddy">Paddy / Rice (धान / ਝੋਨਾ)</option>
+        <option value="Cotton">Cotton (कपास / ਨਰਮਾ)</option>
+        <option value="Maize">Maize (मक्का / ਮੱਕੀ)</option>
+        <option value="Potato">Potato (आलू / ਆਲੂ)</option>
+        <option value="Onion">Onion (प्याज / ਗੰਢਾ)</option>
+        <option value="Mustard">Mustard (सरसों / ਸਰ੍ਹੋਂ)</option>
+        <option value="Chilli">Chilli (मिर्च / ਮਿਰਚ)</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="loadDashboard()" data-i18n="btn_update">
+      🔄 Refresh District Data
+    </button>
+  </div>
+
+  <div class="control-card system-status-dropdown-card">
+    <details class="status-dropdown" id="statusDropdown">
+      <summary class="status-dropdown-summary">
+        <div class="status-summary-left">
+          <span class="status-indicator-dot" id="statusSummaryDot"></span>
+          <span class="status-summary-title" data-i18n="lbl_system_status">System Status</span>
+        </div>
+        <div class="status-summary-right">
+          <span class="status-badge-pill status-connected" id="statusSummaryBadge">
+            <span class="status-badge-text" id="statusSummaryText" data-i18n="status_connected">Connected</span>
+          </span>
+          <span class="status-chevron">▼</span>
+        </div>
+      </summary>
+
+      <div class="status-dropdown-menu" id="statusDropdownMenu">
+        <div class="status-item" id="statusRowWeather">
+          <div class="status-item-meta">
+            <span class="status-item-name">📡 Weather API</span>
+            <span class="status-item-provider">Open-Meteo ECMWF</span>
+          </div>
+          <span class="status-state-pill state-connected" id="badgeStatusWeather" data-i18n="status_connected">Connected</span>
+        </div>
+
+        <div class="status-item" id="statusRowSoil">
+          <div class="status-item-meta">
+            <span class="status-item-name">🌱 Soil Health API</span>
+            <span class="status-item-provider">ECMWF Land (0-27cm)</span>
+          </div>
+          <span class="status-state-pill state-connected" id="badgeStatusSoil" data-i18n="status_connected">Connected</span>
+        </div>
+
+        <div class="status-item" id="statusRowMandi">
+          <div class="status-item-meta">
+            <span class="status-item-name">💰 Mandi Price API</span>
+            <span class="status-item-provider">Agmarknet Data.gov.in</span>
+          </div>
+          <span class="status-state-pill state-connected" id="badgeStatusMandi" data-i18n="status_connected">Connected</span>
+        </div>
+
+        <div class="status-item" id="statusRowAi">
+          <div class="status-item-meta">
+            <span class="status-item-name">🧠 Groq AI Service</span>
+            <span class="status-item-provider">Whisper-v3 & Qwen 3.8</span>
+          </div>
+          <span class="status-state-pill state-connected" id="badgeStatusAi" data-i18n="status_connected">Connected</span>
+        </div>
+
+        <div class="status-item" id="statusRowServer">
+          <div class="status-item-meta">
+            <span class="status-item-name">⚡ API Gateway</span>
+            <span class="status-item-provider">Kisan Mitra Daemon</span>
+          </div>
+          <span class="status-state-pill state-connected" id="badgeStatusServer" data-i18n="status_connected">Connected</span>
+        </div>
+      </div>
+    </details>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <button class="hamburger-btn" id="sidebarToggleBtn" onclick="toggleSidebar(event)" title="Toggle Sidebar" aria-label="Toggle Sidebar">
+        <svg class="hamburger-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <div>
+        <h1 class="page-title" id="pageHeaderTitle"><span data-i18n="app_title">Kisan Mitra</span> <span id="headerDistrictBadge" style="color:var(--accent-emerald);">• Ludhiana</span></h1>
+        <p class="page-subtitle" data-i18n="app_subtitle">Real-time AI voice & advisory assistant for extreme climate defense and market intelligence.</p>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <div class="status-pill">
+        <div class="pulse-dot"></div>
+        <span id="activeDistrictDisplay">Ludhiana, Punjab</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- THREE METRIC CARDS -->
+  <div class="cards-grid">
+    <!-- Weather Card -->
+    <div class="metric-card">
+      <div class="metric-header">
+        <span class="metric-title" data-i18n="card_weather_title">🌦️ Live Weather</span>
+        <div class="metric-icon-box icon-blue">☀️</div>
+      </div>
+      <div>
+        <div class="stat-big" id="statTemp">--°C</div>
+        <div class="stat-sub"><span data-i18n="lbl_humidity">Humidity</span>: <b id="statHumidity">--%</b></div>
+        <div class="stat-sub"><span data-i18n="lbl_rain_today">Rain Today</span>: <b id="statRainToday">-- mm</b></div>
+        <div class="stat-sub"><span data-i18n="lbl_forecast_24h">Next 24h Rain</span>: <b id="statRain24h">-- mm</b></div>
+      </div>
+      <div>
+        <span class="stat-tag tag-blue" id="tagRainAlert">Clear Skies</span>
+      </div>
+    </div>
+
+    <!-- Soil Card -->
+    <div class="metric-card">
+      <div class="metric-header">
+        <span class="metric-title" data-i18n="card_soil_title">🌱 Soil Health (Rootzone)</span>
+        <div class="metric-icon-box icon-green">🌿</div>
+      </div>
+      <div>
+        <div class="stat-big" id="statSoilMoisture">--%</div>
+        <div class="stat-sub"><span data-i18n="lbl_topsoil">Topsoil (0-1cm)</span>: <b id="statTopsoil">--%</b></div>
+        <div class="stat-sub"><span data-i18n="lbl_soil_temp">Surface Temp</span>: <b id="statSoilTemp">--°C</b></div>
+        <div class="stat-sub"><span data-i18n="lbl_forecast_14d">14-Day Rain Total</span>: <b id="statRain14d">-- mm</b></div>
+      </div>
+      <div>
+        <span class="stat-tag tag-emerald" id="tagSoilStatus">Adequate Moisture</span>
+      </div>
+    </div>
+
+    <!-- Mandi Card -->
+    <div class="metric-card">
+      <div class="metric-header">
+        <span class="metric-title" data-i18n="card_mandi_title">💰 APMC Mandi Price</span>
+        <div class="metric-icon-box icon-amber">⚖️</div>
+      </div>
+      <div>
+        <div class="stat-big" id="statMandiPrice">₹ --</div>
+        <div class="stat-sub"><span data-i18n="lbl_market">Market Yard</span>: <b id="statMandiYard">--</b></div>
+        <div class="stat-sub"><span data-i18n="lbl_range">Range:</span> <b id="statPriceRange">₹ -- - ₹ --</b></div>
+        <div class="stat-sub"><span data-i18n="lbl_arrival_date">Arrival Date</span>: <b id="statArrivalDate">--</b></div>
+      </div>
+      <div>
+        <span class="stat-tag tag-amber" id="tagMandiUnit" data-i18n="unit_price">Rs / Quintal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTELLIGENCE GRID: ADVISORIES & CROP YIELD (2-COLUMN BALANCED) -->
+  <div class="intelligence-grid">
+    <!-- 1. 🚨 AUTONOMOUS ADVERSE-WEATHER ADVISORY SECTION -->
+    <section class="alerts-section">
+      <div class="section-header-row">
+        <h3 class="section-heading" data-i18n="section_alerts_title">🚨 Autonomous Adverse-Weather Advisories</h3>
+        <span class="count-badge" id="alertsCountBadge">0 Alerts</span>
+      </div>
+      <div id="alertsContainer" class="alerts-container">
+        <div class="alert-empty-card" data-i18n="section_alerts_empty">
+          ✅ All Clear: No adverse weather or soil alerts currently detected. Conditions are favorable.
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 📊 DYNAMIC CROP YIELD ESTIMATOR SECTION -->
+    <section class="yield-section">
+      <div class="section-header-row">
+        <h3 class="section-heading" data-i18n="section_yield_title">📊 Dynamic Crop Yield Estimator</h3>
+        <span class="crop-badge" id="yieldCropBadge">Crop: Wheat</span>
+      </div>
+
+      <!-- 3 Metric Cards for Yield -->
+      <div class="yield-cards-grid">
+        <div class="yield-card">
+          <div class="yield-card-title" data-i18n="lbl_baseline_yield">Baseline Genetic Yield</div>
+          <div class="yield-card-stat" id="statBaselineYield">-- qt / ha</div>
+          <div class="yield-card-sub" id="statCropLabel" data-i18n="lbl_optimal_potential">Optimal genetic potential</div>
+        </div>
+
+        <div class="yield-card">
+          <div class="yield-card-title" data-i18n="lbl_estimated_yield">Estimated Current Yield</div>
+          <div class="yield-card-stat highlight" id="statEstimatedYield">-- qt / ha</div>
+          <div class="yield-card-sub" id="statYieldDelta">--% realized</div>
+        </div>
+
+        <div class="yield-card">
+          <div class="yield-card-title" data-i18n="lbl_yield_rating">Yield Rating</div>
+          <div class="yield-card-stat rating" id="statYieldRating">--</div>
+          <div class="yield-card-sub" id="statRatingDesc" data-i18n="lbl_rating_based">Based on current telemetry</div>
+        </div>
+      </div>
+
+      <!-- Yield Progress Bar -->
+      <div class="yield-progress-box">
+        <div class="progress-labels">
+          <span data-i18n="lbl_yield_progress">Genetic Potential Realized</span>
+          <b id="progressPctText">--%</b>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="yieldProgressBar" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Expandable Factor Breakdown -->
+      <details class="yield-breakdown-details" id="yieldBreakdownDetails">
+        <summary class="yield-breakdown-summary">
+          <span>🔬 <b data-i18n="lbl_yield_factors">Agronomic Impact Factors Breakdown</b></span>
+          <span id="expandFactorsText" data-i18n="lbl_expand_factors" style="font-size:0.8rem; color:var(--text-muted);">Expand Factors ▼</span>
+        </summary>
+        <div class="factors-list" id="yieldFactorsList">
+          <div class="factor-item">Awaiting live telemetry...</div>
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <!-- INTERACTIVE AI AREA -->
+  <section class="ai-section">
+    <!-- Voice Area -->
+    <div class="voice-banner">
+      <button class="mic-action-btn" id="micBtn" onclick="toggleVoiceRecording()" title="Click to speak">
+        🎙️
+      </button>
+      <div class="voice-text">
+        <h3 id="micTitle" data-i18n="voice_title">🎤 Multilingual Voice Assistant</h3>
+        <p id="micStatus" data-i18n="voice_subtitle">Click mic to speak in Hindi, Punjabi, Telugu, or English. You get a Voice Reply + Text Reply.</p>
+      </div>
+    </div>
+
+    <!-- Quick Question Chips -->
+    <div class="quick-chips-row">
+      <button class="quick-chip" onclick="askQuickChip('irrigation')" data-i18n="chip_irrigation">💧 Should I irrigate today?</button>
+      <button class="quick-chip" onclick="askQuickChip('spray')" data-i18n="chip_spray">🧪 Safe to spray pesticide?</button>
+      <button class="quick-chip" onclick="askQuickChip('harvest')" data-i18n="chip_harvest">🌾 Sowing & harvest window?</button>
+      <button class="quick-chip" onclick="askQuickChip('price')" data-i18n="chip_price">💵 What is the Mandi price?</button>
+    </div>
+
+    <!-- Chat Stream Log -->
+    <div class="chat-window" id="chatWindow">
+      <div class="chat-bubble bubble-bot-text" id="initialChatBubble" data-i18n="lbl_welcome_chat">
+        👋 <b>Kisan Mitra AI:</b> Welcome! Ask me any specific question about irrigation, rain, or market prices in your district.
+      </div>
+    </div>
+
+    <!-- Text Typing Input -->
+    <div class="input-row">
+      <input type="text" id="queryTextInput" class="text-query-input" 
+             placeholder="Ask a question (e.g. 'Will it rain tomorrow in Ludhiana?', 'Mandi rate of wheat')..."
+             data-i18n-ph="typing_placeholder"
+             onkeypress="if(event.key==='Enter') sendTextQuery()">
+      <button class="send-query-btn" onclick="sendTextQuery()" data-i18n="btn_send">
+        Ask AI ➔
+      </button>
+    </div>
+  </section>
+
+  <footer class="footer-text" data-i18n="footer_text">
+    Kisan Mitra • Zero Dummy Data Compliant • Powered by Open-Meteo, IMD, Data.gov.in & Groq AI
+  </footer>
+</main>
+
+<audio id="audioPlayer"></audio>
+
+<script src="app.js?v=2.7"></script>
+</body>
+</html>
